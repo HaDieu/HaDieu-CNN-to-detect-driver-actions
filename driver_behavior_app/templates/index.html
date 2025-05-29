@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nhận diện hành vi lái xe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .container {
+      background-color: #fff;
+      border: 2px dashed #ccc;
+      padding: 30px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    #uploaded-image {
+      width: 400px;
+      height: auto;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    #result {
+      font-size: 20px;
+      margin-top: 15px;
+      color: #364156;
+      font-weight: bold;
+    }
+
+    .btn {
+      background-color: #c71b20;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+  <h1>Phát hiện hành vi lái xe</h1>
+  <div class="container">
+    <form id="upload-form" enctype="multipart/form-data">
+      <img id="uploaded-image" src="#" alt="Ảnh sẽ hiển thị ở đây">
+      <br>
+      <input type="file" id="image-input" name="file" accept="image/*" required>
+      <br>
+      <button type="submit" class="btn">Nhận dạng</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById('image-input');
+    const uploadedImage = document.getElementById('uploaded-image');
+
+    // Hiển thị ảnh đã chọn
+    imageInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          uploadedImage.src = e.target.result;
+          uploadedImage.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Gửi ảnh và nhận kết quả thông qua AJAX
+    $("#upload-form").on("submit", function(event) {
+      event.preventDefault();
+      const formData = new FormData();
+      formData.append("file", $("#image-input")[0].files[0]);
+
+      $.ajax({
+        url: "/predict",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+          // Hiển thị kết quả dưới ảnh
+          $("#result").html(response.result);
+          $("#uploaded-image").attr("src", response.image_url);
+        },
+        error: function(xhr, status, error) {
+          alert("Có lỗi xảy ra. Vui lòng thử lại.");
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
